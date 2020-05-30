@@ -62,7 +62,7 @@ int main (int argc, char* argv[])
 			case 'f': //fcntl : read()/write()
 				do{					
 					ret = read(file_fd, buf, sizeof(buf)); // read from the input file
-					write(dev_fd, buf, ret);//write to the the device
+					if(ret > 0)    write(dev_fd, buf, sizeof(buf));//write to the the device
 				}	while(ret > 0);
 			break;
 			case 'm':
@@ -77,8 +77,8 @@ int main (int argc, char* argv[])
 						perror("failed to map input file\n");
 						return 1;
 					}
-
-					write(dev_fd, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
+					
+					for(int j = 0; j < PAGE_SIZE && j < (file_size - ret); j += BUF_SIZE)	write(dev_fd, &file_address[j], BUF_SIZE);
 					//write(1, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
 					munmap(file_address, PAGE_SIZE);
 				}

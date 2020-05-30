@@ -26,14 +26,19 @@ int main (int argc, char* argv[])
 	char *kernel_address, *file_address;
 
 	int N = atoi(argv[1]);
-    strcpy(method, argv[N+2]);
+	strcpy(method, argv[N+2]);
 	strcpy(ip, argv[N+3]);
 	if( (dev_fd = open("/dev/slave_device", O_RDWR)) < 0)//should be O_RDWR for PROT_WRITE when mmap()
 	{
 		perror("failed to open /dev/slave_device\n");
 		return 1;
 	}
-	
+
+	if(ioctl(dev_fd, 0x12345677, ip) == -1)	//0x12345677 : connect to master in the device
+	{
+		perror("ioclt create slave socket error\n");
+		return 1;
+	}
 	
 	for(int i = 0; i < N; i++){
 		
@@ -45,26 +50,17 @@ int main (int argc, char* argv[])
 			return 1;
 		}
 
-		if(ioctl(dev_fd, 0x12345677, ip) == -1)	//0x12345677 : connect to master in the device
-		{
-			perror("ioclt create slave socket error\n");
-			return 1;
-		}
-
 		write(1, "ioctl success\n", 14);
 		size_t remain;
+		ret=read(dev_fd, buf, BUF_SIZE);
+		sscanf(buf, "%zu", &remain);
+		file_size = remain;
 		switch(method[0])
 		{
 			case 'f'://fcntl : read()/write()
-				ret=read(dev_fd, buf, BUF_SIZE);
-				printf("%d\n", ret);
-				sscanf(buf, "%zu", &remain);
-				file_size = remain;
-                printf("%d\n", file_size);
 				do
 				{
-				    read(dev_fd, buf, sizeof(buf)); // read from the the device
-                    //printf("%s\n", buf);
+					read(dev_fd, buf, sizeof(buf)); // read from the the device
 					if(remain > BUF_SIZE){
 						write(file_fd, buf, sizeof(buf)); //write to the input file
 						remain -= BUF_SIZE;
@@ -75,9 +71,6 @@ int main (int argc, char* argv[])
 				}while(remain > 0);
 				break;
 			case 'm'://mmap
-				read(dev_fd, buf, BUF_SIZE);
-				sscanf(buf, "%zu", &remain);
-				file_size = remain;
 				ftruncate(file_fd, file_size);
 
 				char *mfile;
@@ -88,15 +81,15 @@ int main (int argc, char* argv[])
 						read(dev_fd, buf, sizeof(buf));
 						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, (cursor/PAGE_SIZE)*PAGE_SIZE);
 						memcpy(&mfile[cursor%PAGE_SIZE], buf, BUF_SIZE);
-                        cursor += BUF_SIZE;
-                        munmap(mfile, PAGE_SIZE);
-                        remain -= BUF_SIZE;
+						cursor += BUF_SIZE;
+						munmap(mfile, PAGE_SIZE);
+						remain -= BUF_SIZE;
 					}else{
 						read(dev_fd, buf, remain);
 						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, (cursor/PAGE_SIZE)*PAGE_SIZE);
 						memcpy(&mfile[cursor%PAGE_SIZE], buf, remain);
 						cursor += remain;
-                        munmap(mfile, PAGE_SIZE);
+						munmap(mfile, PAGE_SIZE);
 						remain = 0;
 					}
 				}
