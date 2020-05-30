@@ -56,27 +56,24 @@ int main (int argc, char* argv[])
 		switch(method[0])
 		{
 			case 'f'://fcntl : read()/write()
-				
-				ret=read(dev_fd, buf, 32);
+				ret=read(dev_fd, buf, BUF_SIZE);
 				printf("%d\n", ret);
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;
 				do
 				{
-				        //printf("%zu\n", remain);
-					if(remain > sizeof(buf))
-						ret = read(dev_fd, buf, sizeof(buf)); // read from the the device
-					else
-						ret = read(dev_fd, buf, remain); // read from the the device
-					write(file_fd, buf, ret); //write to the input file
-					//printf("%d", ret);
-					write(1, buf, ret);
-					remain -= ret;
+				    read(dev_fd, buf, sizeof(buf)); // read from the the device
+					if(remain > BUF_SIZE){
+						write(file_fd, buf, sizeof(buf)); //write to the input file
+						remain -= BUF_SIZE;
+					}else{
+						write(file_fd, buf, remain); //write to the input file
+						remain = 0;
+					}
 				}while(remain > 0);
 				break;
-				
 			case 'm'://mmap
-				read(dev_fd, buf, 32);
+				read(dev_fd, buf, BUF_SIZE);
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;
 				ftruncate(file_fd, file_size);
@@ -85,12 +82,21 @@ int main (int argc, char* argv[])
 				int cursor = 0;
 				
 				while(remain > 0){
-					ret = read(dev_fd, buf, sizeof(buf));
-					mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, cursor);
-					cursor += ret;
-					memcpy(mfile, buf, ret);
-					munmap(mfile, PAGE_SIZE);
-					remain -= ret;
+					if(remain > BUF_SIZE){
+						read(dev_fd, buf, sizeof(buf));
+						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, cursor);
+						cursor += BUF_SIZE;
+						memcpy(mfile, buf, BUF_SIZE);
+						munmap(mfile, PAGE_SIZE);
+						remain -= BUF_SIZE;
+					}else{
+						read(dev_fd, buf, remain);
+						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, cursor);
+						cursor += remain;
+						memcpy(mfile, buf, remain);
+						munmap(mfile, PAGE_SIZE);
+						remain = 0;
+					}
 				}
 				
 				break;
