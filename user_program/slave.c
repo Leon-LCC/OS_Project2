@@ -60,9 +60,11 @@ int main (int argc, char* argv[])
 				printf("%d\n", ret);
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;
+                printf("%d\n", file_size);
 				do
 				{
 				    read(dev_fd, buf, sizeof(buf)); // read from the the device
+                    //printf("%s\n", buf);
 					if(remain > BUF_SIZE){
 						write(file_fd, buf, sizeof(buf)); //write to the input file
 						remain -= BUF_SIZE;
@@ -77,24 +79,24 @@ int main (int argc, char* argv[])
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;
 				ftruncate(file_fd, file_size);
-				
+
 				char *mfile;
 				int cursor = 0;
 				
 				while(remain > 0){
 					if(remain > BUF_SIZE){
 						read(dev_fd, buf, sizeof(buf));
-						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, cursor);
-						cursor += BUF_SIZE;
-						memcpy(mfile, buf, BUF_SIZE);
-						munmap(mfile, PAGE_SIZE);
-						remain -= BUF_SIZE;
+						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, (cursor/PAGE_SIZE)*PAGE_SIZE);
+						memcpy(&mfile[cursor%PAGE_SIZE], buf, BUF_SIZE);
+                        cursor += BUF_SIZE;
+                        munmap(mfile, PAGE_SIZE);
+                        remain -= BUF_SIZE;
 					}else{
 						read(dev_fd, buf, remain);
-						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, cursor);
+						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, (cursor/PAGE_SIZE)*PAGE_SIZE);
+						memcpy(&mfile[cursor%PAGE_SIZE], buf, remain);
 						cursor += remain;
-						memcpy(mfile, buf, remain);
-						munmap(mfile, PAGE_SIZE);
+                        munmap(mfile, PAGE_SIZE);
 						remain = 0;
 					}
 				}

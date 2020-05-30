@@ -79,7 +79,7 @@ int main (int argc, char* argv[])
 					}
 
 					write(dev_fd, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
-					write(1, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
+					//write(1, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
 					munmap(file_address, PAGE_SIZE);
 				}
 				//offset += file_size;
