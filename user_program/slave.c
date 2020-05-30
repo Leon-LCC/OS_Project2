@@ -52,27 +52,30 @@ int main (int argc, char* argv[])
 		}
 
 		write(1, "ioctl success\n", 14);
-
+		size_t remain;
 		switch(method[0])
 		{
 			case 'f'://fcntl : read()/write()
-				size_t remain;
-				read(dev_fd, buf, 32);
+				
+				ret=read(dev_fd, buf, 32);
+				printf("%d\n", ret);
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;
 				do
 				{
+				        //printf("%zu\n", remain);
 					if(remain > sizeof(buf))
 						ret = read(dev_fd, buf, sizeof(buf)); // read from the the device
 					else
 						ret = read(dev_fd, buf, remain); // read from the the device
 					write(file_fd, buf, ret); //write to the input file
+					//printf("%d", ret);
+					write(1, buf, ret);
 					remain -= ret;
 				}while(remain > 0);
 				break;
 				
 			case 'm'://mmap
-				size_t remain;
 				read(dev_fd, buf, 32);
 				sscanf(buf, "%zu", &remain);
 				file_size = remain;

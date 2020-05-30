@@ -53,9 +53,9 @@ int main (int argc, char* argv[])
 			perror("failed to get filesize\n");
 			return 1;
 		}
-		char size[32];
+		char size[512];
 		sprintf(size, "%zu", file_size);
-		write(dev_fd, size, 32); // tell the reciever how large is the file
+		write(dev_fd, size, 512); // tell the reciever how large is the file
 		//offset += 32
 
 		switch(method[0]){
@@ -73,11 +73,13 @@ int main (int argc, char* argv[])
 						return 1;
 					}
 					*/
-					if( (file_address = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, dev_fd, ret)) == (void *) -1){
+					if( (file_address = mmap(NULL, PAGE_SIZE, PROT_READ, MAP_SHARED, file_fd, ret)) == (void *) -1){
 						perror("failed to map input file\n");
 						return 1;
 					}
+
 					write(dev_fd, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
+write(1, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
 					munmap(file_address, PAGE_SIZE);
 				}
 				//offset += file_size;
