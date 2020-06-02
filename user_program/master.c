@@ -22,6 +22,7 @@ int main (int argc, char* argv[])
 	char buf[BUF_SIZE];
 	int i, dev_fd, file_fd;// the fd for the device and the fd for the input file
 	size_t ret, file_size, offset = 0, tmp;
+	size_t total_filesize = 0;
 	char file_name[50], method[20];
 	char *kernel_address = NULL, *file_address = NULL;
 	struct timeval start;
@@ -53,6 +54,8 @@ int main (int argc, char* argv[])
 			perror("failed to get filesize\n");
 			return 1;
 		}
+		total_filesize += file_size;
+
 		char size[512];
 		sprintf(size, "%zu", file_size);
 		write(dev_fd, size, 512); // tell the reciever how large is the file
@@ -85,14 +88,15 @@ int main (int argc, char* argv[])
 				//offset += file_size;
 			break;
 		}
-		gettimeofday(&end, NULL);
-		trans_time = (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)*0.0001;
-		printf("Transmission time: %lf ms, File size: %d bytes\n", trans_time, file_size / 8);
 	}
 	if(ioctl(dev_fd, 0x12345679) == -1){ // end sending data, close the connection
 		perror("ioclt server exits error\n");
 		return 1;
 	}
+	
+	gettimeofday(&end, NULL);
+	trans_time = (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)*0.0001;
+	printf("Transmission time: %lf ms, File size: %d bytes\n", trans_time, total_filesize);
 	
 	close(file_fd);
 	close(dev_fd);

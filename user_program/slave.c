@@ -16,7 +16,7 @@ int main (int argc, char* argv[])
 {
 	char buf[BUF_SIZE];
 	int i, dev_fd, file_fd;// the fd for the device and the fd for the input file
-	size_t ret, file_size = 0, data_size = -1;
+	size_t ret, file_size = 0, data_size = -1, total_filesize = 0;
 	char file_name[50];
 	char method[20];
 	char ip[20];
@@ -28,6 +28,8 @@ int main (int argc, char* argv[])
 	int N = atoi(argv[1]);
 	strcpy(method, argv[N+2]);
 	strcpy(ip, argv[N+3]);
+
+	gettimeofday(&start ,NULL);
 	if( (dev_fd = open("/dev/slave_device", O_RDWR)) < 0)//should be O_RDWR for PROT_WRITE when mmap()
 	{
 		perror("failed to open /dev/slave_device\n");
@@ -39,10 +41,8 @@ int main (int argc, char* argv[])
 		perror("ioclt create slave socket error\n");
 		return 1;
 	}
-	
+
 	for(int i = 0; i < N; i++){
-		
-		gettimeofday(&start ,NULL);
 		strcpy(file_name, argv[i+2]);
 		if( (file_fd = open (file_name, O_RDWR | O_CREAT | O_TRUNC)) < 0)
 		{
@@ -55,6 +55,8 @@ int main (int argc, char* argv[])
 		ret=read(dev_fd, buf, BUF_SIZE);
 		sscanf(buf, "%zu", &remain);
 		file_size = remain;
+		total_filesize += file_size;
+
 		switch(method[0])
 		{
 			case 'f'://fcntl : read()/write()
@@ -97,11 +99,6 @@ int main (int argc, char* argv[])
 				break;
 		}
 
-		gettimeofday(&end, NULL);
-		trans_time = (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)*0.0001;
-		printf("Transmission time: %lf ms, File size: %d bytes\n", trans_time, file_size / 8);
-
-
 		close(file_fd);
 		
 	}
@@ -112,6 +109,10 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 	
+	gettimeofday(&end, NULL);
+	trans_time = (end.tv_sec - start.tv_sec)*1000 + (end.tv_usec - start.tv_usec)*0.0001;
+	printf("Transmission time: %lf ms, File size: %d bytes\n", trans_time, total_filesize);
+
 	close(dev_fd);
 	return 0;
 }
