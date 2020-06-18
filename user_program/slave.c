@@ -91,6 +91,7 @@ int main (int argc, char* argv[])
 						mfile = mmap(NULL, PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, file_fd, (cursor/PAGE_SIZE)*PAGE_SIZE);
 						memcpy(&mfile[cursor%PAGE_SIZE], buf, remain);
 						cursor += remain;
+						ioctl(dev_fd, 0x12345676, (unsigned long)mfile);
 						munmap(mfile, PAGE_SIZE);
 						remain = 0;
 					}

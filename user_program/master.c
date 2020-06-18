@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
-
 #define PAGE_SIZE 4096
 #define BUF_SIZE 512
 
@@ -46,6 +45,7 @@ int main (int argc, char* argv[])
 	for(i = 0 ; i < N ; i++){
 		strncpy(file_name, argv[2+i], sizeof(file_name)); // filepath
 		if( (file_fd = open(file_name, O_RDWR)) < 0 ){
+			//fprintf(stderr, "File name is: %s\n", file_name);
 			perror("failed to open input file\n");
 			return 1;
 		}
@@ -60,7 +60,7 @@ int main (int argc, char* argv[])
 		sprintf(size, "%zu", file_size);
 		write(dev_fd, size, 512); // tell the reciever how large is the file
 		//offset += 32
-
+		
 		switch(method[0]){
 			case 'f': //fcntl : read()/write()
 				do{					
@@ -83,6 +83,7 @@ int main (int argc, char* argv[])
 					
 					for(int j = 0; j < PAGE_SIZE && j < (file_size - ret); j += BUF_SIZE)	write(dev_fd, &file_address[j], BUF_SIZE);
 					//write(1, file_address, PAGE_SIZE < (file_size - ret) ? PAGE_SIZE : (file_size - ret));
+					ioctl(dev_fd, 0x12345676, (unsigned long)file_address);
 					munmap(file_address, PAGE_SIZE);
 				}
 				//offset += file_size;
