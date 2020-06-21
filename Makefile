@@ -1,1 +1,2 @@
-bash compile.sh
+all:
+	bash compile.sh
