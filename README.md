@@ -8,7 +8,6 @@ This is the source code of operating system project2.
 ./ksocket: the device moudule including the funtions used for kernel socket
 ./user_program : the user program "master" and "slave"
 
-
 To use it, please:
 1.change to super user
 2.execute "./compile.sh" to compile codes and install modules
