@@ -33,12 +33,12 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 	
-	gettimeofday(&start ,NULL); // start time
 
 	if(ioctl(dev_fd, 0x12345677) == -1){ //0x12345677 : create socket and accept the connection from the slave
 		perror("ioclt server create socket error\n");
 		return 1;
 	}
+	gettimeofday(&start ,NULL); // start time
 
 	strncpy(method, argv[argc - 1], sizeof(method)); // policy
 

@@ -26,10 +26,9 @@ int main (int argc, char* argv[])
 	char *kernel_address, *file_address;
 
 	int N = atoi(argv[1]);
-	strcpy(method, argv[N+2]);
-	strcpy(ip, argv[N+3]);
+	strcpy(method, argv[argc-2]);
+	strcpy(ip, argv[argc-1]);
 
-	gettimeofday(&start ,NULL);
 	if( (dev_fd = open("/dev/slave_device", O_RDWR)) < 0)//should be O_RDWR for PROT_WRITE when mmap()
 	{
 		perror("failed to open /dev/slave_device\n");
@@ -42,15 +41,16 @@ int main (int argc, char* argv[])
 		return 1;
 	}
 
+	gettimeofday(&start ,NULL);
 	for(int i = 0; i < N; i++){
-		strcpy(file_name, argv[i+2]);
+		strcpy(file_name, argv[2+i]);
 		if( (file_fd = open (file_name, O_RDWR | O_CREAT | O_TRUNC)) < 0)
 		{
 			perror("failed to open input file\n");
 			return 1;
 		}
 
-		write(1, "ioctl success\n", 14);
+		//write(1, "ioctl success\n", 14);
 		size_t remain;
 		ret=read(dev_fd, buf, BUF_SIZE);
 		sscanf(buf, "%zu", &remain);
