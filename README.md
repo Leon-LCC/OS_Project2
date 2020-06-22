@@ -1,5 +1,4 @@
 # OS_Project2
-布拉格錢
 
 
 This is the source code of operating system project2.
