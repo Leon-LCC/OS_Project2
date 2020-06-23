@@ -27,7 +27,8 @@ int main (int argc, char* argv[])
 	struct timeval start;
 	struct timeval end;
 	double trans_time; // calulate the time between the device is opened and it is closed
-	int N = atoi(argv[1]); // number of files to send
+	//int N = atoi(argv[1]); // number of files to send
+	int N = argc - 2;
 	if( (dev_fd = open("/dev/master_device", O_RDWR)) < 0){
 		perror("failed to open /dev/master_device\n");
 		return 1;
@@ -43,7 +44,7 @@ int main (int argc, char* argv[])
 	strncpy(method, argv[argc - 1], sizeof(method)); // policy
 
 	for(i = 0 ; i < N ; i++){
-		strncpy(file_name, argv[2+i], sizeof(file_name)); // filepath
+		strncpy(file_name, argv[1+i], sizeof(file_name)); // filepath
 		if( (file_fd = open(file_name, O_RDWR)) < 0 ){
 			//fprintf(stderr, "File name is: %s\n", file_name);
 			perror("failed to open input file\n");

@@ -25,7 +25,8 @@ int main (int argc, char* argv[])
 	double trans_time; //calulate the time between the device is opened and it is closed
 	char *kernel_address, *file_address;
 
-	int N = atoi(argv[1]);
+	//int N = atoi(argv[1]);	
+	int N = argc - 3;
 	strcpy(method, argv[argc-2]);
 	strcpy(ip, argv[argc-1]);
 
@@ -43,7 +44,7 @@ int main (int argc, char* argv[])
 
 	gettimeofday(&start ,NULL);
 	for(int i = 0; i < N; i++){
-		strcpy(file_name, argv[2+i]);
+		strcpy(file_name, argv[1+i]);
 		if( (file_fd = open (file_name, O_RDWR | O_CREAT | O_TRUNC)) < 0)
 		{
 			perror("failed to open input file\n");
