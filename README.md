@@ -22,9 +22,9 @@ To use it, please:
 
 i.e.
 
-./master 1 file1_in mmap
+./master file1_in mmap
 
-./slave 1 file1_out fcntl 127.0.0.1
+./slave file1_out fcntl 127.0.0.1
 
 Make sure that you are under the path "./user_program" when you execute user programs.
 Though the execution order of user program "master" and "slave" does not matter,
